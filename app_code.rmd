@@ -1,0 +1,56 @@
+
+The shiny app plots graph against miles per gallon (mpg) for different variables from the mtcars dataset.
+
+```{r }
+head(mtcars)
+```
+
+## UI Code
+
+```{r echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+shinyUI(fluidPage(
+  
+  # Application title
+  titlePanel("Cars Dataset - Miles per Gallon"),
+  
+  sidebarPanel(
+    
+    selectInput("variable", "Variable:", 
+                c("Cylinders" = "cyl",
+                  "Transmission" = "am",
+                  "Gears" = "gear"))
+  ),
+  
+  mainPanel(
+    # Output: Formatted text for caption ----
+    h3(textOutput("caption")),
+    
+    # Output: Plot of the requested variable against mpg ----
+    plotOutput("mpgPlot")
+  )
+))
+```
+
+## Server Code
+
+```{r}
+library(shiny)
+library(plotly)
+mpgData <- mtcars
+mpgData$am <- factor(mpgData$am, labels = c("Automatic", "Manual"))
+shinyServer(function(input, output) {
+  
+  formulaText <- reactive({
+    paste("mpg vs ", input$variable)
+  })
+  
+  output$caption <- renderText({
+    formulaText()
+  })
+  output$mpgPlot <- renderPlot({
+    ggplot(mpgData, aes_string(y=input$variable, x="mpg")) + geom_point()
+  })
+  
+})
+```
